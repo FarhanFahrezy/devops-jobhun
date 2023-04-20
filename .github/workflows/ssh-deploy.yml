@@ -1,0 +1,44 @@
+#Menggunakan action SSH deployments
+name: Deploy to SSH instance
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    #Memilih environment : Disini dipilih ubuntu versi terbaru
+    runs-on: ubuntu-latest
+
+    steps:
+    #Pengecekan kode sumber
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    #Melakukan instalasi ssh client  
+    - name: Install SSH Client
+      run: sudo apt-get update && sudo apt-get install -y ssh
+    
+    #Melakukan deploy ke server
+    - name: Deploy to SSH instance
+      uses: easingthemes/ssh-deploy@main
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}   #ssh-keygen -m PEM -t rsa -b 4096
+        ARGS: "-avzr --delete"
+        REMOTE_HOST: ${{ secrets.REMOTE_HOST }}           #contoh mydomain.com
+        REMOTE_USER: ${{ secrets.REMOTE_USER }}           #contoh myusername
+      with:
+        server: ${{ secrets.SSH_SERVER }} 
+        username: ${{ secrets.SSH_USERNAME }}
+        port: ${{ secrets.SSH_PORT }}
+        local_path: "."
+        remote_path: "/var/www/html/jobhun"
+        
+        
+      #Pada bagian with, kita menentukan beberapa konfigurasi yaitu server, username, port, local_path, dan remote_path. 
+      #server = alamat IP atau hostname dari instance yang akan kita deploy. 
+      #username adalah username untuk login ke instance. 
+      #port adalah port yang digunakan untuk koneksi SSH ke instance. 
+      #local_path adalah path lokal dari file atau folder yang akan di-deploy ke instance. 
+      #remote_path adalah path pada instance tempat file atau folder akan di-deploy.
+      #semua secrets di-generate dan disimpan di secrets Github repository
